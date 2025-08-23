@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # Development environment
+  dev:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+      - pre-commit-cache:/root/.cache/pre-commit
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app/src
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Testing service
+  test:
+    build:
+      context: .
+      target: testing
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+    environment:
+      - PYTHONPATH=/app/src
+    profiles:
+      - testing
+
+  # Fast tests only
+  test-fast:
+    build:
+      context: .
+      target: testing
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+    environment:
+      - PYTHONPATH=/app/src
+    command: make test-fast
+    profiles:
+      - testing
+
+  # Linting service
+  lint:
+    build:
+      context: .
+      target: linting
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+    environment:
+      - PYTHONPATH=/app/src
+    profiles:
+      - quality
+
+  # Documentation server
+  docs:
+    build:
+      context: .
+      target: docs
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app/src
+    profiles:
+      - docs
+
+  # Production environment
+  prod:
+    build:
+      context: .
+      target: production
+    environment:
+      - PYTHONPATH=/app/src
+    profiles:
+      - production
+
+  # Performance benchmarking
+  benchmark:
+    build:
+      context: .
+      target: testing
+    volumes:
+      - .:/app
+      - pip-cache:/root/.cache/pip
+    environment:
+      - PYTHONPATH=/app/src
+    command: make test-benchmark
+    profiles:
+      - performance
+
+volumes:
+  pip-cache:
+  pre-commit-cache:

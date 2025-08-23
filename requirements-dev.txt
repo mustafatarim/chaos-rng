@@ -1,0 +1,60 @@
+# Development dependencies for chaos-rng
+
+# Core development tools
+-e .[all]
+
+# Testing
+pytest>=7.0
+pytest-cov>=4.0
+pytest-benchmark>=4.0
+pytest-xdist>=3.0  # Parallel test execution
+pytest-mock>=3.0
+hypothesis>=6.0  # Property-based testing
+nistrng>=0.1.0  # NIST statistical tests
+
+# Code quality
+black>=22.0
+ruff>=0.1.0
+mypy>=1.0
+isort>=5.10
+pre-commit>=3.0
+
+# Security
+bandit>=1.7.0
+safety>=2.0
+pip-audit>=2.0
+
+# Documentation
+sphinx>=5.0
+sphinx-rtd-theme>=1.0
+numpydoc>=1.4
+doc8>=1.0  # Documentation linting
+sphinx-lint>=0.6
+
+# Build and packaging
+build>=0.10.0
+twine>=4.0
+bump2version>=1.0  # Version management
+
+# Development utilities
+ipython>=8.0  # Better REPL
+ipdb>=0.13  # Debugger
+rich>=13.0  # Rich output formatting
+tqdm>=4.0  # Progress bars
+
+# Performance analysis
+memory-profiler>=0.60
+line-profiler>=4.0
+py-spy>=0.3  # Sampling profiler
+
+# Additional testing tools
+coverage[toml]>=7.0
+pytest-html>=3.0  # HTML test reports
+pytest-json-report>=1.5  # JSON test reports
+
+# Type checking extras
+types-requests
+types-setuptools
+
+# Development server for docs
+livereload>=2.6  # Auto-reload for docs development
