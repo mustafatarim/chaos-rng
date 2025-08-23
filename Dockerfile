@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for chaos-rng development and production
 
 # Development stage
-FROM python:3.11-slim as development
+FROM python:3.13-slim as development
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -34,7 +34,7 @@ RUN pip install -e .[all]
 RUN pre-commit install
 
 # Production stage
-FROM python:3.11-slim as production
+FROM python:3.13-slim as production
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
