@@ -6,6 +6,11 @@ and other utilities for working with chaos-based RNGs.
 """
 
 from .analysis import LyapunovCalculator, StatisticalAnalyzer
-from .validation import NISTTestSuite, EntropyValidator
+from .validation import EntropyValidator, NISTTestSuite
 
-__all__ = ["LyapunovCalculator", "StatisticalAnalyzer", "NISTTestSuite", "EntropyValidator"]
+__all__ = [
+    "LyapunovCalculator",
+    "StatisticalAnalyzer",
+    "NISTTestSuite",
+    "EntropyValidator",
+]

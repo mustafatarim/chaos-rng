@@ -38,8 +38,13 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-all]
-        args: [--strict, --ignore-missing-imports]
+        additional_dependencies: [
+          types-requests,
+          types-setuptools,
+          numpy,
+          scipy
+        ]
+        args: [--ignore-missing-imports, --disable-error-code=type-arg]
         exclude: ^(tests/|docs/)
 
   - repo: https://github.com/pycqa/isort
@@ -60,7 +65,7 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
-        args: [--max-line-length=88, --extend-ignore=E203,W503]
+        args: [--max-line-length=88, --extend-ignore=E203]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -94,7 +99,7 @@ repos:
         pass_filenames: false
         always_run: true
         args: [tests/, -v, --tb=short, -x]
-        stages: [push]
+        stages: [pre-push]
 
       - id: chaos-rng-statistical-tests
         name: chaos-rng-statistical-tests

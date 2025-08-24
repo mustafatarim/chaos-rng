@@ -12,16 +12,20 @@ __version__ = "0.1.0"
 __author__ = "Mustafa Tarim"
 __email__ = "mail@mustafatarim.com"
 
-from .generators.three_body import ThreeBodyRNG, ThreeBodySystem
 from .generators.bit_extractors import BitExtractor
-from .generators.numpy_compat import ChaosBitGenerator, ChaosGenerator, create_chaos_generator
+from .generators.numpy_compat import (
+    ChaosBitGenerator,
+    ChaosGenerator,
+    create_chaos_generator,
+)
+from .generators.three_body import ThreeBodyRNG, ThreeBodySystem
 
 __all__ = [
     "ThreeBodyRNG",
-    "ThreeBodySystem", 
+    "ThreeBodySystem",
     "BitExtractor",
     "ChaosBitGenerator",
-    "ChaosGenerator", 
+    "ChaosGenerator",
     "create_chaos_generator",
     "__version__",
 ]

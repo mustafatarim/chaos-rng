@@ -4,8 +4,8 @@ Pytest configuration and fixtures for chaos-rng tests.
 This module provides common fixtures and configuration for the test suite.
 """
 
-import pytest
 import numpy as np
+import pytest
 from chaos_rng import ThreeBodyRNG
 from chaos_rng.generators.numpy_compat import ChaosBitGenerator, ChaosGenerator
 
@@ -19,7 +19,7 @@ def basic_rng():
 @pytest.fixture
 def reproducible_rng():
     """Create a reproducible RNG with fixed seed."""
-    return ThreeBodyRNG(seed=12345, extraction_method='lsb')
+    return ThreeBodyRNG(seed=12345, extraction_method="lsb")
 
 
 @pytest.fixture
@@ -48,11 +48,13 @@ def test_sequence_large():
     return (rng.random(100000) * 2).astype(int)  # Binary sequence
 
 
-@pytest.fixture(params=[
-    {'masses': [1.0, 1.0, 1.0], 'extraction_method': 'lsb'},
-    {'masses': [1.0, 2.0, 0.5], 'extraction_method': 'threshold'},
-    {'masses': [2.0, 1.5, 1.2], 'extraction_method': 'poincare'},
-])
+@pytest.fixture(
+    params=[
+        {"masses": [1.0, 1.0, 1.0], "extraction_method": "lsb"},
+        {"masses": [1.0, 2.0, 0.5], "extraction_method": "threshold"},
+        {"masses": [2.0, 1.5, 1.2], "extraction_method": "poincare"},
+    ]
+)
 def parametrized_rng(request):
     """Parametrized RNG fixture for testing different configurations."""
     return ThreeBodyRNG(seed=42, **request.param)
@@ -69,16 +71,8 @@ def temp_file(tmp_path):
 def known_chaotic_ic():
     """Initial conditions known to produce chaotic behavior."""
     return {
-        'positions': np.array([
-            [-1.0, 0.0],
-            [1.0, 0.0],
-            [0.0, 1.0]
-        ]),
-        'velocities': np.array([
-            [0.0, 0.5],
-            [0.0, -0.5],
-            [-0.5, 0.0]
-        ])
+        "positions": np.array([[-1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]),
+        "velocities": np.array([[0.0, 0.5], [0.0, -0.5], [-0.5, 0.0]]),
     }
 
 
@@ -86,16 +80,8 @@ def known_chaotic_ic():
 def stable_ic():
     """Initial conditions for relatively stable motion."""
     return {
-        'positions': np.array([
-            [-2.0, 0.0],
-            [2.0, 0.0],
-            [0.0, 2.0]
-        ]),
-        'velocities': np.array([
-            [0.0, 0.1],
-            [0.0, -0.1],
-            [-0.1, 0.0]
-        ])
+        "positions": np.array([[-2.0, 0.0], [2.0, 0.0], [0.0, 2.0]]),
+        "velocities": np.array([[0.0, 0.1], [0.0, -0.1], [-0.1, 0.0]]),
     }
 
 
@@ -105,25 +91,21 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
     config.addinivalue_line(
         "markers", "statistical: marks tests that perform statistical validation"
     )
-    config.addinivalue_line(
-        "markers", "nist: marks tests that require NIST test suite"
-    )
+    config.addinivalue_line("markers", "nist: marks tests that require NIST test suite")
 
 
 # Test configuration
 TEST_CONFIG = {
-    'small_sample_size': 1000,
-    'medium_sample_size': 10000,
-    'large_sample_size': 100000,
-    'statistical_threshold': 0.01,
-    'performance_iterations': 100,
-    'lyapunov_tolerance': 0.1
+    "small_sample_size": 1000,
+    "medium_sample_size": 10000,
+    "large_sample_size": 100000,
+    "statistical_threshold": 0.01,
+    "performance_iterations": 100,
+    "lyapunov_tolerance": 0.1,
 }
 
 
