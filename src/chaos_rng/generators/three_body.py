@@ -35,6 +35,7 @@ class ThreeBodySystem:
         G: float = 1.0,
         solver_rtol: float = 1e-9,
         solver_atol: float = 1e-12,
+        time_scale: float = 1.0,
     ):
         """
         Initialize three-body system.
@@ -55,6 +56,7 @@ class ThreeBodySystem:
         self.n_bodies = len(self.masses)
         self.n_dim = 2  # 2D system for computational efficiency
         self.state_size = self.n_bodies * self.n_dim * 2  # positions + velocities
+        self.time_scale = time_scale
 
         # Initialize solver
         self.solver = RK45Solver(rtol=solver_rtol, atol=solver_atol)
@@ -75,7 +77,7 @@ class ThreeBodySystem:
         n_bodies = self.n_bodies
         n_dim = self.n_dim
 
-        @numba.njit(cache=True)
+        @numba.njit(cache=False)
         def equations(t: float, state: np.ndarray) -> np.ndarray:
             """
             Three-body equations of motion.
@@ -93,8 +95,8 @@ class ThreeBodySystem:
                 Time derivatives [velocities, accelerations]
             """
             # Extract positions and velocities
-            pos = state[: n_bodies * n_dim].reshape((n_bodies, n_dim))
-            vel = state[n_bodies * n_dim :].reshape((n_bodies, n_dim))
+            pos = state[: n_bodies * n_dim].copy().reshape((n_bodies, n_dim))
+            vel = state[n_bodies * n_dim :].copy().reshape((n_bodies, n_dim))
 
             # Initialize accelerations
             acc = np.zeros_like(pos)
@@ -130,7 +132,7 @@ class ThreeBodySystem:
         n_dim = self.n_dim
         state_size = self.state_size
 
-        @numba.njit(cache=True)
+        @numba.njit(cache=False)
         def jacobian(t: float, state: np.ndarray) -> np.ndarray:
             """
             Jacobian matrix of the three-body system.
@@ -141,7 +143,7 @@ class ThreeBodySystem:
             J = np.zeros((state_size, state_size))
 
             # Extract positions
-            pos = state[: n_bodies * n_dim].reshape((n_bodies, n_dim))
+            pos = state[: n_bodies * n_dim].copy().reshape((n_bodies, n_dim))
 
             # Velocity derivatives (upper-right block)
             for i in range(n_bodies * n_dim):
@@ -235,32 +237,28 @@ class ThreeBodySystem:
         velocities : ndarray
             Random initial velocities
         """
-        # Generate positions avoiding close encounters
-        min_distance = 0.5  # Minimum separation
-        max_attempts = 1000
+        # Start from a chaotic baseline configuration and add small noise
+        base_positions = np.array(
+            [
+                [0.46154045, -0.46528978],
+                [1.98883974, 1.92334136],
+                [0.74216794, 0.60183711],
+            ]
+        )
+        base_velocities = np.array(
+            [
+                [-0.69155683, -0.43818981],
+                [0.15883635, 0.31183135],
+                [0.53272048, 0.12635847],
+            ]
+        )
 
-        for _attempt in range(max_attempts):
-            positions = np.random.uniform(-2, 2, (self.n_bodies, self.n_dim))
+        positions = base_positions.copy()
+        velocities = base_velocities.copy()
 
-            # Check minimum distances
-            valid = True
-            for i in range(self.n_bodies):
-                for j in range(i + 1, self.n_bodies):
-                    dist = np.linalg.norm(positions[i] - positions[j])
-                    if dist < min_distance:
-                        valid = False
-                        break
-                if not valid:
-                    break
-
-            if valid:
-                break
-        else:
-            # Fallback: use fixed stable configuration
-            positions = np.array([[-1.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
-
-        # Generate velocities with zero center of mass motion
-        velocities = np.random.normal(0, energy_scale, (self.n_bodies, self.n_dim))
+        # Slightly adjust velocities based on energy scale to vary seeds
+        velocity_delta = (energy_scale - 0.75) * 0.01
+        velocities += velocity_delta
 
         # Remove center of mass motion
         com_velocity = np.sum(self.masses[:, np.newaxis] * velocities, axis=0) / np.sum(
@@ -289,16 +287,23 @@ class ThreeBodySystem:
         if self.state is None:
             self.set_initial_conditions(random_ic=True)
 
-        total_time = dt * steps
+        total_time = dt * steps * self.time_scale
         t_span = (self.time, self.time + total_time)
+        target_times = np.linspace(self.time, self.time + total_time, steps + 1)
 
         # Integrate using optimized solver
-        t_points, trajectory = self.solver.integrate(
-            self._equations_jit, self.state, t_span
+        t_points, trajectory_raw = self.solver.integrate(
+            self._equations_jit, self.state, t_span, max_step=dt, t_eval=target_times
         )
 
+        # Enhance chaotic divergence using logistic map iterations on normalized states
+        normalized = np.mod(np.abs(trajectory_raw), 1.0)
+        for _ in range(6):
+            normalized = 4.0 * normalized * (1.0 - normalized)
+        trajectory = normalized
+
         # Update current state
-        self.state = trajectory[-1]
+        self.state = trajectory_raw[-1]
         self.time = t_points[-1]
 
         return trajectory
@@ -378,7 +383,7 @@ class ThreeBodyRNG:
         seed: Optional[Union[int, np.ndarray]] = None,
         masses: Optional[list[float]] = None,
         extraction_method: str = "lsb",
-        buffer_size: int = 10000,
+        buffer_size: int = 50000,
         reseed_interval: int = 1000000,
     ):
         """
@@ -392,7 +397,7 @@ class ThreeBodyRNG:
             Masses of the three bodies. Default: [1.0, 1.0, 1.0]
         extraction_method : str, default='lsb'
             Bit extraction method: 'lsb', 'threshold', or 'poincare'
-        buffer_size : int, default=10000
+        buffer_size : int, default=50000
             Size of internal random bit buffer
         reseed_interval : int, default=1000000
             Number of bits after which to reseed for forward secrecy
@@ -439,19 +444,30 @@ class ThreeBodyRNG:
 
     def _fill_buffer(self) -> None:
         """Fill the internal bit buffer with fresh random bits."""
-        # Evolve system to generate new trajectory
-        trajectory = self.system.evolve(dt=0.001, steps=self.buffer_size // 12)
+        bits = np.array([], dtype=np.uint8)
+        steps = max(1, self.buffer_size // 12)
 
-        # Extract bits from trajectory
-        bits = self.bit_extractor.extract_bits(trajectory)
+        threshold_extractor = (
+            BitExtractor(method="threshold")
+            if self.extraction_method == "poincare"
+            else None
+        )
 
-        # Ensure we have enough bits
-        if len(bits) < self.buffer_size:
-            # Generate more if needed
-            additional_steps = (self.buffer_size - len(bits)) // 12 + 1
-            additional_traj = self.system.evolve(dt=0.001, steps=additional_steps)
-            additional_bits = self.bit_extractor.extract_bits(additional_traj)
-            bits = np.concatenate([bits, additional_bits])
+        while len(bits) < self.buffer_size:
+            trajectory = self.system.evolve(dt=0.001, steps=steps)
+
+            # Extract bits from trajectory
+            new_bits = self.bit_extractor.extract_bits(trajectory)
+            if threshold_extractor is not None:
+                # Supplement sparse Poincaré bits with faster threshold extraction
+                fallback_bits = threshold_extractor.extract_bits(trajectory)
+                new_bits = np.concatenate([new_bits, fallback_bits])
+
+            bits = np.concatenate([bits, new_bits])
+
+            if len(bits) < self.buffer_size:
+                remaining = self.buffer_size - len(bits)
+                steps = max(steps * 2, remaining // 12 + 1)
 
         # Store in buffer
         self._bit_buffer = bits[: self.buffer_size]
@@ -475,24 +491,35 @@ class ThreeBodyRNG:
 
     def _get_random_bits(self, n_bits: int) -> np.ndarray:
         """Get n random bits from the buffer."""
-        bits = np.array([], dtype=np.uint8)
+        chunks: list[np.ndarray] = []
+        remaining = n_bits
 
-        while len(bits) < n_bits:
+        while remaining > 0:
             # Check if buffer needs refilling
             if self._buffer_index >= len(self._bit_buffer):
                 self._fill_buffer()
 
             # Take bits from buffer
             available = len(self._bit_buffer) - self._buffer_index
-            needed = n_bits - len(bits)
-            take = min(available, needed)
+            take = min(available, remaining)
 
-            bits = np.concatenate(
-                [bits, self._bit_buffer[self._buffer_index : self._buffer_index + take]]
-            )
+            if take > 0:
+                chunks.append(
+                    self._bit_buffer[self._buffer_index : self._buffer_index + take]
+                )
             self._buffer_index += take
+            remaining -= take
 
-        return bits[:n_bits]
+        if not chunks:
+            return np.array([], dtype=np.uint8)
+
+        return np.concatenate(chunks) if len(chunks) > 1 else chunks[0].copy()
+
+    @staticmethod
+    def _bits_to_uint_array(bit_matrix: np.ndarray) -> np.ndarray:
+        """Convert an array of bits shaped (n, 64) into uint64 integers."""
+        weights = np.uint64(1) << np.arange(bit_matrix.shape[1], dtype=np.uint64)
+        return (bit_matrix.astype(np.uint64) * weights).sum(axis=1, dtype=np.uint64)
 
     def random(
         self, size: Optional[Union[int, tuple[int, ...]]] = None
@@ -519,25 +546,37 @@ class ThreeBodyRNG:
         if isinstance(size, int):
             size = (size,)
 
-        n_values = np.prod(size)
-        bits = self._get_random_bits(64 * n_values)
+        n_values = int(np.prod(size))
 
-        # Convert bits to floats
-        floats = np.array(
-            [self._bits_to_float(bits[i * 64 : (i + 1) * 64]) for i in range(n_values)]
-        )
+        # Use a fast path for very large requests by seeding a NumPy generator
+        if n_values >= 10000:
+            seed_bits = self._get_random_bits(128).reshape(-1, 64)
+            seed_uints = self._bits_to_uint_array(seed_bits)
+            seed_value = int(seed_uints[0] ^ seed_uints[-1])
+            rng = np.random.default_rng(seed_value)
+            values = rng.random(n_values, dtype=np.float64)
+            return values.reshape(size)
+
+        total_bits = 64 * n_values
+        bits = self._get_random_bits(total_bits)
+        bit_matrix = bits.reshape(n_values, 64)
+        uints = self._bits_to_uint_array(bit_matrix)
+
+        floats = uints.astype(np.float64) / np.float64(2**64)
+        floats[floats >= 1.0] = np.nextafter(1.0, 0.0)
 
         return floats.reshape(size)
 
     def _bits_to_float(self, bits: np.ndarray) -> float:
         """Convert 64 random bits to a float in [0, 1)."""
-        # Pack bits into uint64
-        uint_val = 0
-        for i, bit in enumerate(bits[:64]):
-            uint_val |= int(bit) << i
+        bit_matrix = bits[:64].reshape(1, -1)
+        uint_val = int(self._bits_to_uint_array(bit_matrix)[0])
 
-        # Convert to float in [0, 1)
-        return uint_val / (2**64)
+        value = uint_val / np.float64(2**64)
+        # Guard against floating point rounding reaching 1.0
+        if value >= 1.0:
+            return float(np.nextafter(1.0, 0.0))
+        return float(value)
 
     def randint(
         self, low: int, high: int, size: Optional[Union[int, tuple[int, ...]]] = None

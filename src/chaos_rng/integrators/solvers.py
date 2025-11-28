@@ -23,6 +23,7 @@ class ODESolver(ABC):
         y0: np.ndarray,
         t_span: tuple[float, float],
         max_step: Optional[float] = None,
+        t_eval: Optional[np.ndarray] = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Integrate ODE system from t_span[0] to t_span[1]."""
         pass
@@ -56,6 +57,7 @@ class RK45Solver(ODESolver):
         y0: np.ndarray,
         t_span: tuple[float, float],
         max_step: Optional[float] = None,
+        t_eval: Optional[np.ndarray] = None,
         dense_output: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -90,6 +92,8 @@ class RK45Solver(ODESolver):
         }
         if max_step is not None:
             solver_kwargs["max_step"] = max_step
+        if t_eval is not None:
+            solver_kwargs["t_eval"] = t_eval
 
         result = solve_ivp(f, t_span, y0, **solver_kwargs)
 
@@ -127,6 +131,7 @@ class AdaptiveSolver(ODESolver):
         y0: np.ndarray,
         t_span: tuple[float, float],
         max_step: Optional[float] = None,
+        t_eval: Optional[np.ndarray] = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Integrate using custom adaptive method.
@@ -150,7 +155,7 @@ class AdaptiveSolver(ODESolver):
             Solution trajectory
         """
         # Use optimized Numba implementation
-        return _adaptive_rk45_jit(
+        t_arr, y_arr = _adaptive_rk45_jit(
             f,
             y0.astype(np.float64),
             t_span[0],
@@ -159,6 +164,15 @@ class AdaptiveSolver(ODESolver):
             self.atol,
             max_step,
         )
+
+        if t_eval is not None:
+            # Interpolate results to requested evaluation times
+            y_interp = np.zeros((len(t_eval), y_arr.shape[1]))
+            for idx in range(y_arr.shape[1]):
+                y_interp[:, idx] = np.interp(t_eval, t_arr, y_arr[:, idx])
+            return t_eval, y_interp
+
+        return t_arr, y_arr
 
 
 @numba.njit(cache=True)

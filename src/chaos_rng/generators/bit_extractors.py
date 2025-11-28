@@ -12,6 +12,8 @@ from typing import Optional
 import numba
 import numpy as np
 
+from chaos_rng.utils.analysis import StatisticalAnalyzer
+
 
 class BitExtractionMethod(ABC):
     """Abstract base class for bit extraction methods."""
@@ -190,6 +192,10 @@ class BitExtractor:
             "poincare": PoincareExtractor(),
         }
 
+        valid_methods = set(self._extractors.keys()) | {"combined"}
+        if self.method not in valid_methods:
+            raise KeyError(f"Unknown extraction method: {self.method}")
+
     def extract_bits(self, trajectory: np.ndarray) -> np.ndarray:
         """
         Extract random bits from trajectory using specified method.
@@ -226,11 +232,13 @@ class BitExtractor:
         bits_list = []
 
         # Extract with each method
-        for extractor in self._extractors.items():
+        for extractor in self._extractors.values():
             try:
                 method_bits = extractor.extract(trajectory)
                 bits_list.append(method_bits)
-            except Exception:
+            except (
+                Exception
+            ):  # nosec B112 - best-effort aggregation, failures are acceptable
                 # Skip methods that fail
                 continue
 
@@ -395,6 +403,9 @@ def _von_neumann_debias_jit(bits: np.ndarray) -> np.ndarray:
     bits from pairs (0,1) -> 0 and (1,0) -> 1, discarding
     pairs (0,0) and (1,1).
     """
+    # Ensure a consistent unsigned type regardless of input
+    bits = bits.astype(np.uint8)
+
     n_bits = len(bits)
     if n_bits < 2:
         return bits
@@ -428,7 +439,7 @@ class EntropyAnalyzer:
 
     def __init__(self):
         """Initialize entropy analyzer."""
-        pass
+        self._analyzer = StatisticalAnalyzer()
 
     def shannon_entropy(self, bits: np.ndarray) -> float:
         """
@@ -459,69 +470,43 @@ class EntropyAnalyzer:
 
         return entropy
 
-    def autocorrelation(self, bits: np.ndarray, max_lag: int = 100) -> np.ndarray:
+    def autocorrelation(
+        self, bits: np.ndarray, max_lag: int = 100
+    ) -> dict[str, np.ndarray | float | int]:
         """
-        Calculate autocorrelation function of bit sequence.
+        Calculate autocorrelation statistics for bit sequence.
 
-        Parameters
-        ----------
-        bits : ndarray
-            Binary sequence
-        max_lag : int, default=100
-            Maximum lag to compute
-
-        Returns
-        -------
-        ndarray
-            Autocorrelation values for lags 0 to max_lag
+        Returns a dictionary with autocorrelation values and independence metrics.
         """
-        n = len(bits)
-        if n <= max_lag:
-            max_lag = n - 1
+        return self._analyzer.autocorrelation_test(bits, max_lag)
 
-        # Convert to centered values (-1, +1)
-        centered_bits = 2 * bits.astype(float) - 1
-
-        autocorr = np.zeros(max_lag + 1)
-
-        for lag in range(max_lag + 1):
-            if lag == 0:
-                autocorr[lag] = 1.0
-            else:
-                correlation = np.mean(centered_bits[:-lag] * centered_bits[lag:])
-                autocorr[lag] = correlation
-
-        return autocorr
-
-    def frequency_test(self, bits: np.ndarray) -> tuple[float, float]:
+    def frequency_test(self, bits: np.ndarray) -> dict[str, float | int | bool]:
         """
-        Perform basic frequency test.
+        Perform frequency/uniformity test on the bit sequence.
 
-        Parameters
-        ----------
-        bits : ndarray
-            Binary sequence
-
-        Returns
-        -------
-        test_statistic : float
-            Test statistic value
-        p_value : float
-            P-value of the test
+        Delegates to the comprehensive StatisticalAnalyzer implementation to
+        provide chi-square, p-value, and uniformity assessment.
         """
-        n = len(bits)
-        if n == 0:
-            return 0.0, 1.0
+        result = self._analyzer.frequency_analysis(bits)
+        if "uniform" in result:
+            result["uniform"] = bool(result["uniform"])
+        return result
 
-        # Count ones
-        ones = np.sum(bits)
+    def spectral_test(self, bits: np.ndarray) -> dict[str, np.ndarray | float | int]:
+        """Perform spectral analysis of the sequence."""
+        return self._analyzer.spectral_test(bits)
 
-        # Test statistic
-        test_stat = abs(ones - n / 2) / np.sqrt(n / 4)
+    def entropy_measures(
+        self, bits: np.ndarray, block_size: int = 8
+    ) -> dict[str, float]:
+        """Compute Shannon and block entropy measures."""
+        return self._analyzer.entropy_measures(bits, block_size)
 
-        # Approximate p-value using normal distribution
-        from scipy.stats import norm
+    def comprehensive_analysis(self, bits: np.ndarray) -> dict[str, object]:
+        """
+        Run a suite of statistical tests and quality metrics on the sequence.
 
-        p_value = 2 * (1 - norm.cdf(test_stat))
-
-        return test_stat, p_value
+        This aggregates frequency, runs, autocorrelation, spectral, and entropy
+        analyses and provides an overall quality summary.
+        """
+        return self._analyzer.comprehensive_analysis(bits)

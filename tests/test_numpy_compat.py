@@ -7,6 +7,7 @@ for the chaos-based random number generator.
 
 import numpy as np
 import pytest
+
 from chaos_rng.generators.numpy_compat import (
     ChaosBitGenerator,
     ChaosGenerator,

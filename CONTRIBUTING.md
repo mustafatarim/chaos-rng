@@ -39,10 +39,10 @@ This project and everyone participating in it is governed by our [Code of Conduc
    # Create virtual environment
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   
+
    # Install in development mode with all dependencies
    pip install -e .[all]
-   
+
    # Install pre-commit hooks
    pre-commit install
    ```
@@ -162,7 +162,7 @@ def calculate_lyapunov_exponent(
 ) -> float:
     """
     Calculate the largest Lyapunov exponent for a chaotic system.
-    
+
     Parameters
     ----------
     positions : np.ndarray
@@ -171,17 +171,17 @@ def calculate_lyapunov_exponent(
         Time step size.
     steps : int
         Number of steps to analyze.
-        
+
     Returns
     -------
     float
         The largest Lyapunov exponent.
-        
+
     Raises
     ------
     ValueError
         If positions array has incorrect shape.
-        
+
     Examples
     --------
     >>> positions = simulate_three_body(steps=1000)

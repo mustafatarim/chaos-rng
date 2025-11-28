@@ -160,3 +160,4 @@ safety-report.json
 
 # NIST test results
 nist-test-results/
+.pre-commit-cache/

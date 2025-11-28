@@ -68,7 +68,7 @@ FROM development as testing
 # Run tests by default
 CMD ["make", "test"]
 
-# Linting stage  
+# Linting stage
 FROM development as linting
 
 # Run linting by default

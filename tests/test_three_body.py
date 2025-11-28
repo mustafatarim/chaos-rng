@@ -7,6 +7,7 @@ and its chaotic dynamics properties.
 
 import numpy as np
 import pytest
+
 from chaos_rng.generators.three_body import ThreeBodyRNG, ThreeBodySystem
 
 

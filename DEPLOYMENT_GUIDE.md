@@ -78,7 +78,7 @@ git push -u origin main
 # 1. Create accounts at:
 #    - https://pypi.org (production)
 #    - https://test.pypi.org (testing)
-# 
+#
 # 2. Generate API tokens:
 #    - Go to Account Settings → API tokens
 #    - Create token with scope for "Entire account"

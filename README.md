@@ -86,7 +86,7 @@ from chaos_rng import ThreeBodyRNG
 # Custom masses for different chaotic dynamics
 custom_masses = [2.0, 1.5, 0.8]
 rng = ThreeBodyRNG(
-    seed=42, 
+    seed=42,
     masses=custom_masses,
     extraction_method='threshold'
 )
@@ -108,7 +108,7 @@ methods = ['lsb', 'threshold', 'poincare', 'combined']
 for method in methods:
     rng = ThreeBodyRNG(seed=42, extraction_method=method)
     samples = rng.random(10000)
-    
+
     # Basic statistical check
     mean = np.mean(samples)
     std = np.std(samples)
@@ -173,11 +173,11 @@ rng = ThreeBodyRNG(seed=42)
 for i in range(10):
     new_data = (rng.random(10000) * 2).astype(int)
     validation_results = validator.add_data(new_data)
-    
+
     if validation_results:
         pass_rate = validation_results['summary']['pass_rate']
         print(f"Batch {i+1}: Quality = {pass_rate:.2%}")
-        
+
         if validator.failure_count >= 3:
             print("⚠️  Quality alert: Consider reseeding")
 
@@ -256,7 +256,7 @@ A positive λ confirms chaotic behavior. Our implementation typically produces �
 ### Cryptographic Strength
 
 - **Entropy Source**: High-dimensional chaotic dynamics provide excellent entropy
-- **Secure Seeding**: Uses `os.urandom()` and multiple entropy sources  
+- **Secure Seeding**: Uses `os.urandom()` and multiple entropy sources
 - **Forward Secrecy**: Automatic reseeding prevents state recovery
 - **Side-Channel Resistance**: Constant-time operations where applicable
 
@@ -317,7 +317,7 @@ pytest -m "not slow"
 # Format code
 black src/ tests/
 
-# Lint code  
+# Lint code
 ruff check src/ tests/
 
 # Type checking
@@ -383,7 +383,7 @@ If you use this library in academic research, please cite:
 ## 🔗 Related Projects
 
 - [NumPy](https://numpy.org/) - Numerical computing library
-- [SciPy](https://scipy.org/) - Scientific computing library  
+- [SciPy](https://scipy.org/) - Scientific computing library
 - [NIST Test Suite](https://csrc.nist.gov/Projects/Random-Bit-Generation) - Statistical tests for RNGs
 - [Cryptography](https://cryptography.io/) - Cryptographic recipes and primitives
 

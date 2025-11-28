@@ -34,7 +34,7 @@ Describe the tests that you ran to verify your changes.
 - [ ] Manual testing performed
 
 ### Test Configuration
-- Python version(s): 
+- Python version(s):
 - Operating system(s):
 - Additional dependencies:
 

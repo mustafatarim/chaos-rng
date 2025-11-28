@@ -7,6 +7,7 @@ convert chaotic trajectories into random bit sequences.
 
 import numpy as np
 import pytest
+
 from chaos_rng.generators.bit_extractors import (
     BitExtractor,
     EntropyAnalyzer,

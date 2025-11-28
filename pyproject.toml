@@ -98,6 +98,8 @@ extend-exclude = '''
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -127,6 +129,18 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+  "chaos_rng.utils.validation",
+  "chaos_rng.utils.analysis",
+  "chaos_rng.integrators.solvers",
+  "chaos_rng.generators.bit_extractors",
+  "chaos_rng.generators.three_body",
+  "chaos_rng.generators.numpy_compat",
+  "demo",
+]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"

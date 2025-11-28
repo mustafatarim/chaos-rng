@@ -100,7 +100,7 @@ We regularly perform:
 
 ## Responsible Disclosure
 
-We appreciate the security research community's efforts to improve our library's security. 
+We appreciate the security research community's efforts to improve our library's security.
 
 ### Recognition
 - We will acknowledge security researchers who responsibly disclose vulnerabilities

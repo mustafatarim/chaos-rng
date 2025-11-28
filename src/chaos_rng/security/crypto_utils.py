@@ -10,7 +10,7 @@ import hashlib
 import hmac
 import os
 import struct
-from typing import Optional
+from typing import Any, Callable, Optional
 
 import numpy as np
 
@@ -42,7 +42,7 @@ class SecureSeed:
             Whether to attempt using hardware RNG if available
         """
         self.hardware_rng = hardware_rng if hardware_rng is not None else False
-        self._entropy_sources = []
+        self._entropy_sources: list[Callable[[int], bytes]] = []
         self._initialize_sources()
 
     def _initialize_sources(self) -> None:
@@ -51,7 +51,7 @@ class SecureSeed:
         self._entropy_sources.append(self._get_os_random)
 
         # System-specific sources
-        try:
+        try:  # nosec B110 - availability check only
             # Try to read from /dev/random on Unix systems
             if os.path.exists("/dev/random"):
                 self._entropy_sources.append(self._get_dev_random)
@@ -60,7 +60,7 @@ class SecureSeed:
 
         # Hardware RNG sources
         if self.hardware_rng:
-            try:
+            try:  # nosec B110 - best-effort detection
                 # Intel RDRAND instruction (requires specific CPU support)
                 self._entropy_sources.append(self._get_rdrand)
             except Exception:
@@ -106,7 +106,7 @@ class SecureSeed:
                 data = source(size)
                 if data:
                     entropy_data.append(data)
-            except Exception:
+            except Exception:  # nosec B112 - continue if one source fails
                 continue
 
         if not entropy_data:
@@ -257,9 +257,9 @@ class CryptoPostProcessor:
         self.auto_rekey = auto_rekey
         self.rekey_interval = rekey_interval
 
-        self.bytes_processed = 0
-        self.current_key = None
-        self.cipher = None
+        self.bytes_processed: int = 0
+        self.current_key: bytes = b""
+        self.cipher: Optional[Cipher] = None
 
         if not CRYPTOGRAPHY_AVAILABLE and method in ["chacha20", "aes_ctr"]:
             raise ImportError(
@@ -460,7 +460,7 @@ class SecurityValidator:
     the generator output meets cryptographic requirements.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize security validator."""
         pass
 
@@ -496,7 +496,7 @@ class SecurityValidator:
 
         return entropy >= min_entropy
 
-    def check_forward_secrecy(self, generator, state_size: int = 1000) -> bool:
+    def check_forward_secrecy(self, generator: Any, state_size: int = 1000) -> bool:
         """
         Test forward secrecy properties.
 
@@ -532,14 +532,16 @@ class SecurityValidator:
             return 0.0
 
         # Convert to arrays
-        arr1 = np.frombuffer(data1, dtype=np.uint8).astype(float)
-        arr2 = np.frombuffer(data2, dtype=np.uint8).astype(float)
+        arr1: np.ndarray = np.frombuffer(data1, dtype=np.uint8).astype(float)
+        arr2: np.ndarray = np.frombuffer(data2, dtype=np.uint8).astype(float)
 
         # Calculate correlation coefficient
-        mean1, mean2 = np.mean(arr1), np.mean(arr2)
+        mean1, mean2 = float(np.mean(arr1)), float(np.mean(arr2))
 
-        numerator = np.sum((arr1 - mean1) * (arr2 - mean2))
-        denominator = np.sqrt(np.sum((arr1 - mean1) ** 2) * np.sum((arr2 - mean2) ** 2))
+        numerator: float = float(np.sum((arr1 - mean1) * (arr2 - mean2)))
+        var1: float = float(np.sum((arr1 - mean1) ** 2))
+        var2: float = float(np.sum((arr2 - mean2) ** 2))
+        denominator: float = float(np.sqrt(var1 * var2))
 
         if denominator == 0:
             return 0.0

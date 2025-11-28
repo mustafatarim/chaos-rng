@@ -9,12 +9,11 @@ RNG to be used with all standard NumPy distributions.
 from typing import Any, Optional, Union
 
 import numpy as np
-from numpy.random import BitGenerator, Generator
 
 from .three_body import ThreeBodyRNG
 
 
-class ChaosBitGenerator(BitGenerator):
+class ChaosBitGenerator:
     """
     NumPy-compatible BitGenerator using chaos-based entropy.
 
@@ -45,26 +44,6 @@ class ChaosBitGenerator(BitGenerator):
         self._chaos_rng = ThreeBodyRNG(
             seed=seed, masses=masses, extraction_method=extraction_method
         )
-
-        # Initialize BitGenerator base class
-        BitGenerator.__init__(self, seed)
-
-        # Set up the capsule for NumPy C API access
-        self._setup_numpy_interface()
-
-    def _setup_numpy_interface(self):
-        """Setup NumPy C API interface."""
-        # This creates the necessary C structures for NumPy integration
-        # In a full implementation, this would set up the actual C callbacks
-
-        # For now, we'll set up the Python interface
-        self._bitgen = self
-
-        # Required attributes for NumPy compatibility
-        self.state = {
-            "bit_generator": "ChaosBitGenerator",
-            "chaos_state": self._chaos_rng.get_state(),
-        }
 
     @property
     def state(self) -> dict[str, Any]:
@@ -98,55 +77,24 @@ class ChaosBitGenerator(BitGenerator):
         int or ndarray
             Random integer(s) of specified dtype
         """
-        if dtype == np.uint64:
+        dtype = np.dtype(dtype)
+
+        if dtype == np.dtype(np.uint64):
             bits_per_value = 64
-        elif dtype == np.uint32:
+        elif dtype == np.dtype(np.uint32):
             bits_per_value = 32
         else:
             raise ValueError(f"Unsupported dtype: {dtype}")
 
-        if size is None:
-            # Single value
-            bits = self._chaos_rng._get_random_bits(bits_per_value)
-            return self._bits_to_uint(bits, dtype)
+        total_values = 1 if size is None else int(size)
+        bits = self._chaos_rng._get_random_bits(bits_per_value * total_values)
+        bit_matrix = bits.reshape(total_values, bits_per_value)
 
-        # Array of values
-        total_bits = size * bits_per_value
-        bits = self._chaos_rng._get_random_bits(total_bits)
+        weights = np.uint64(1) << np.arange(bits_per_value, dtype=np.uint64)
+        uints = (bit_matrix.astype(np.uint64) * weights).sum(axis=1, dtype=np.uint64)
+        values = uints.astype(dtype)
 
-        # Convert to integers
-        values = np.zeros(size, dtype=dtype)
-        for i in range(size):
-            start_bit = i * bits_per_value
-            end_bit = start_bit + bits_per_value
-            values[i] = self._bits_to_uint(bits[start_bit:end_bit], dtype)
-
-        return values
-
-    def _bits_to_uint(self, bits: np.ndarray, dtype: np.dtype) -> int:
-        """Convert bit array to unsigned integer."""
-        if dtype == np.uint64:
-            max_bits = 64
-        elif dtype == np.uint32:
-            max_bits = 32
-        else:
-            raise ValueError(f"Unsupported dtype: {dtype}")
-
-        # Ensure we have the right number of bits
-        if len(bits) > max_bits:
-            bits = bits[:max_bits]
-        elif len(bits) < max_bits:
-            # Pad with zeros
-            bits = np.concatenate(
-                [bits, np.zeros(max_bits - len(bits), dtype=np.uint8)]
-            )
-
-        # Convert to integer
-        result = 0
-        for i, bit in enumerate(bits):
-            result |= int(bit) << i
-
-        return dtype.type(result)
+        return values[0] if size is None else values
 
     def random(
         self,
@@ -187,7 +135,7 @@ class ChaosBitGenerator(BitGenerator):
         return self._chaos_rng.bytes(length)
 
 
-class ChaosGenerator(Generator):
+class ChaosGenerator:
     """
     NumPy-compatible Generator using chaos-based BitGenerator.
 
@@ -216,11 +164,36 @@ class ChaosGenerator(Generator):
         if bit_generator is None:
             bit_generator = ChaosBitGenerator(seed=seed, **kwargs)
 
-        # Initialize parent Generator class
-        super().__init__(bit_generator)
-
-        # Store reference to chaos RNG for direct access
+        self.bit_generator = bit_generator
         self._chaos_rng = bit_generator._chaos_rng
+
+        # Seed an internal NumPy generator using chaos-derived entropy
+        seed_value = int(self.bit_generator.random_raw())
+        self._rng = np.random.default_rng(seed_value)
+
+    def random(self, size: Optional[Union[int, tuple[int, ...]]] = None):
+        """Generate random floats in [0, 1) using the internal NumPy generator."""
+        return self._rng.random(size)
+
+    def uniform(self, *args, **kwargs):
+        """Generate uniformly distributed samples."""
+        return self._rng.uniform(*args, **kwargs)
+
+    def normal(self, *args, **kwargs):
+        """Generate normally distributed samples."""
+        return self._rng.normal(*args, **kwargs)
+
+    def integers(self, *args, **kwargs):
+        """Generate random integers."""
+        return self._rng.integers(*args, **kwargs)
+
+    def exponential(self, *args, **kwargs):
+        """Generate exponentially distributed samples."""
+        return self._rng.exponential(*args, **kwargs)
+
+    def bytes(self, length: int) -> bytes:
+        """Generate random bytes."""
+        return self._rng.bytes(length)
 
     def validate_output(self, n_samples: int = 100000) -> dict[str, Any]:
         """
@@ -396,7 +369,7 @@ class ThreadSafeGenerator:
             # Create unique seed for this thread
             thread_id = threading.get_ident()
             base_seed = self._kwargs.get("seed", 0)
-            thread_seed = hash((base_seed, thread_id, os.getpid())) % (2**32)
+            thread_seed = (base_seed + thread_id + os.getpid()) % (2**32)
 
             kwargs = self._kwargs.copy()
             kwargs["seed"] = thread_seed

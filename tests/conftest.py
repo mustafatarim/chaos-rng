@@ -6,6 +6,7 @@ This module provides common fixtures and configuration for the test suite.
 
 import numpy as np
 import pytest
+
 from chaos_rng import ThreeBodyRNG
 from chaos_rng.generators.numpy_compat import ChaosBitGenerator, ChaosGenerator
 

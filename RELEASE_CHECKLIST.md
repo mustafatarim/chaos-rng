@@ -152,7 +152,7 @@ After successful release:
 
 ---
 
-**Release Manager**: _______________  
-**Release Date**: _______________  
-**Version**: _______________  
+**Release Manager**: _______________
+**Release Date**: _______________
+**Version**: _______________
 **Final Sign-off**: _______________
