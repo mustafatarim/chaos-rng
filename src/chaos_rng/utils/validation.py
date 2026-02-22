@@ -5,7 +5,6 @@ This module provides comprehensive validation tools including NIST SP 800-22
 statistical tests, entropy validation, and continuous monitoring capabilities.
 """
 
-import warnings
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -17,11 +16,6 @@ try:
     NIST_AVAILABLE = True
 except ImportError:
     NIST_AVAILABLE = False
-    warnings.warn(
-        "nistrng package not available. NIST tests will not be functional. "
-        "Install with: pip install nistrng",
-        stacklevel=2,
-    )
 
 
 @dataclass

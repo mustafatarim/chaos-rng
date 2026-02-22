@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-02-22
+
+### Fixed
+
+- Stopped emitting a `nistrng` warning during normal `chaos_rng` import when the
+  optional NIST dependency is not installed.
+- NIST helpers still raise an explicit `ImportError` when `NISTTestSuite` is used
+  without installing `nistrng`.
+
 ## [0.1.1] - 2026-02-22
 
 ### Changed
@@ -28,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional cryptographic utilities for seeding and post-processing
 - Performance benchmarking and test coverage
 
-[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mustafatarim/chaos-rng/releases/tag/v0.1.0
