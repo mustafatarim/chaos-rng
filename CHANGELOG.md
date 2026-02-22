@@ -7,46 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-02-22
+
 ### Changed
-- Simplified README to focus on the core API and realistic security expectations.
-- Rewrote deployment and release docs into a minimal publish workflow.
-- Tightened package metadata wording for initial public release.
+
+- Simplified CI to a lean `ci.yml` pipeline and a focused release workflow.
+- Removed broken docs/Read the Docs automation in favor of a README-first flow.
+- Simplified `pre-commit` hooks and local developer commands in `Makefile`.
+- Updated package metadata and release tooling for `0.1.1`.
+- Reduced default QA scope to reliable, non-empty test/lint/build checks.
 
 ## [0.1.0] - 2024-01-XX
 
 ### Added
+
 - Three-body gravitational system implementation
 - Multiple bit extraction methods (LSB, threshold, Poincaré)
 - NumPy-compatible random number generator interface
-- NIST SP 800-22 statistical test suite integration
-- Cryptographic security features with secure seeding
-- Lyapunov exponent calculation for chaos verification
-- Thread-safe random number generation
-- Performance benchmarking suite
-- Comprehensive test coverage
-- Documentation with examples and API reference
+- Validation utilities and statistical test helpers
+- Optional cryptographic utilities for seeding and post-processing
+- Performance benchmarking and test coverage
 
-### Features
-- **Core Physics Engine**: Complete three-body problem solver with configurable masses
-- **Bit Extraction**: Multiple methods for converting chaotic dynamics to random bits
-- **NumPy Integration**: Drop-in replacement for numpy.random with chaos-based entropy
-- **Security**: Cryptographically secure seeding and periodic reseeding
-- **Validation**: Integrated NIST randomness tests and entropy analysis
-- **Performance**: JIT compilation and vectorized operations for high throughput
-
-### Technical Specifications
-- Python 3.9+ support
-- Cross-platform compatibility (Linux, Windows, macOS)
-- Thread-safe design for multi-threaded applications
-- Configurable chaos parameters for different entropy sources
-- Extensive error handling and input validation
-
-### Documentation
-- Complete API documentation
-- Usage examples and tutorials
-- Mathematical background and references
-- Performance benchmarks and statistical validation
-- Contributing guidelines and development setup
-
-[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mustafatarim/chaos-rng/releases/tag/v0.1.0

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chaos-rng"
-version = "0.1.0"
-description = "Chaos-based random number generator built around a three-body simulation"
+version = "0.1.1"
+description = "Chaos-based random number generator using three-body dynamics"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -49,18 +49,17 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0",
     "pre-commit>=3.0",
+    "build>=1.0",
+    "twine>=4.0",
 ]
-docs = [
-    "sphinx>=5.0",
-    "sphinx-rtd-theme>=1.0",
-    "numpydoc>=1.4",
-]
+docs = []
 all = [
-    "chaos-rng[crypto,test,dev,docs]",
+    "chaos-rng[crypto,test,dev]",
 ]
 
 [project.urls]
 Homepage = "https://github.com/mustafatarim/chaos-rng"
+Documentation = "https://github.com/mustafatarim/chaos-rng#readme"
 Repository = "https://github.com/mustafatarim/chaos-rng.git"
 "Bug Tracker" = "https://github.com/mustafatarim/chaos-rng/issues"
 

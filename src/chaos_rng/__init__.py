@@ -1,14 +1,14 @@
 """
 Chaos-based Random Number Generator Library
 
-A professional Python library for generating high-quality random numbers
-using three-body problem dynamics and other chaotic systems.
+A Python library for generating random numbers using three-body problem
+dynamics and other chaotic systems.
 
-This library provides cryptographically secure random number generation
-using the inherent unpredictability of chaotic dynamical systems.
+The library also includes optional NumPy integration and helper utilities
+for validation and cryptographic post-processing experiments.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Mustafa Tarim"
 __email__ = "mail@mustafatarim.com"
 

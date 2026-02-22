@@ -1,115 +1,139 @@
-# chaos-rng
+# Chaos RNG
 
-Minimal, deterministic and NumPy-friendly random number generation based on chaotic three-body dynamics.
+[![CI](https://github.com/mustafatarim/chaos-rng/actions/workflows/ci.yml/badge.svg)](https://github.com/mustafatarim/chaos-rng/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> ⚠️ `chaos-rng` is a research/engineering RNG. It is **not** a replacement for audited cryptographic RNGs such as `secrets`.
+Chaos RNG is a Python library for generating random numbers from chaotic
+three-body dynamics, with NumPy-compatible generators and optional
+cryptographic post-processing utilities.
 
-## Why this project?
-
-This library keeps one core idea: use a chaotic physical simulation as an entropy source, then expose a familiar Python API.
-
-Main goals:
-- Keep the core API small (`random`, `randint`, `bytes`).
-- Keep output reproducible when a seed is provided.
-- Keep NumPy integration straightforward.
-- Keep docs and release process practical.
+This project is currently documented README-first for the `0.1.x` releases.
 
 ## Installation
+
+Core package:
 
 ```bash
 pip install chaos-rng
 ```
 
-For development:
+With optional crypto and test utilities:
 
 ```bash
-pip install -e .
+pip install "chaos-rng[crypto,test]"
 ```
 
-## Quick start
+## Quick Start
 
 ```python
 from chaos_rng import ThreeBodyRNG
 
 rng = ThreeBodyRNG(seed=42)
 
-print(rng.random())          # float in [0, 1)
-print(rng.random(5))         # numpy array
-print(rng.randint(0, 10, 4)) # integers in [0, 10)
-print(rng.bytes(16).hex())   # random bytes
+print(rng.random(5))            # floats in [0, 1)
+print(rng.randint(0, 10, 5))    # integers
+print(rng.bytes(16).hex())      # raw bytes
 ```
 
-## NumPy-compatible usage
+Notes:
+
+- First calls may be slower because numerical kernels warm up (Numba/JIT).
+- Use a fixed `seed` for reproducible tests and experiments.
+
+## NumPy Integration
 
 ```python
 from chaos_rng.generators import create_chaos_generator
 
-g = create_chaos_generator(seed=42)
+gen = create_chaos_generator(seed=42)
 
-samples = g.normal(loc=0, scale=1, size=1000)
+normal = gen.normal(size=1000)
+uniform = gen.uniform(0, 10, size=100)
+integers = gen.integers(0, 100, size=50)
 ```
 
-## API overview
+## Optional Crypto Utilities
 
-### `ThreeBodyRNG`
-- `random(size=None)` → float/ndarray in `[0, 1)`
-- `randint(low, high, size=None)` → int/ndarray in `[low, high)`
-- `bytes(length)` → `bytes`
-- `get_state()` / `set_state(...)` → state snapshot for reproducible sequences
+The `crypto` extra provides helper utilities for secure seeding and
+post-processing. These tools are useful for experimentation and integration,
+but this project should not be treated as a drop-in replacement for a
+security-audited cryptographic RNG.
 
-### `ThreeBodySystem`
-- `evolve(dt, steps)`
-- `compute_lyapunov_exponent(...)`
-- `get_energy()`
+```python
+from chaos_rng import ThreeBodyRNG
+from chaos_rng.security import CryptoPostProcessor, SecureSeed
 
-### NumPy layer
-- `ChaosBitGenerator`
-- `ChaosGenerator`
-- `create_chaos_generator(seed=...)`
+seed = SecureSeed().generate_seed()
+rng = ThreeBodyRNG(seed=seed)
 
-## Project structure
+raw = rng.bytes(64)
+processed = CryptoPostProcessor(method="hash").process(raw)
 
-```text
-src/chaos_rng/
-  generators/     # RNG logic and NumPy compatibility
-  integrators/    # ODE solver and Lyapunov tools
-  utils/          # validation and analysis helpers
-tests/            # unit tests
+print(len(processed))
 ```
 
-## Development checks
+## Validation Utilities (Optional / Expensive)
 
-Because this repository uses a `src/` layout, run tests with `PYTHONPATH=src` if you are not installing the package first:
+Validation helpers are included under `chaos_rng.utils.validation`. They can be
+computationally expensive and are best used for offline analysis.
+
+```python
+from chaos_rng import ThreeBodyRNG
+from chaos_rng.utils.validation import EntropyValidator
+
+rng = ThreeBodyRNG(seed=42)
+bits = (rng.random(10000) * 2).astype(int)
+
+validator = EntropyValidator()
+result = validator.validate_entropy_rate(bits)
+print(result)
+```
+
+`NISTTestSuite` and `ContinuousValidator` are also available, but they are not
+part of the default CI gate in `0.1.1`.
+
+## Performance and Caveats
+
+- This library prioritizes clarity and reproducibility over minimal dependency
+  footprint (`numpy`, `scipy`, `numba`).
+- Some operations are expensive for large sample sizes.
+- Cryptographic helpers are optional and not a substitute for audited crypto
+  libraries or formal security review.
+
+## Development
+
+Common commands:
 
 ```bash
-PYTHONPATH=src pytest -q
+make install-dev
+make lint
+make test
+make test-slow
+make build
+make check-build
 ```
 
-## Release (simple workflow)
-
-1. Update `CHANGELOG.md`.
-2. Bump version in:
-   - `pyproject.toml`
-   - `src/chaos_rng/__init__.py`
-3. Run checks:
+Local release gate:
 
 ```bash
-PYTHONPATH=src pytest -q
-python -m compileall src
+make release-check
 ```
 
-4. Build package:
+## Release Flow (0.1.x)
 
-```bash
-python -m build
-```
+The intended release path is:
 
-5. Upload:
+1. Tag release (`v0.1.1`)
+2. Publish to TestPyPI
+3. Smoke-test install from TestPyPI
+4. Publish to PyPI
 
-```bash
-twine upload dist/*
-```
+GitHub Actions workflows:
+
+- `CI` (`.github/workflows/ci.yml`)
+- `Release` (`.github/workflows/release.yml`)
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT License. See [`LICENSE`](LICENSE).
