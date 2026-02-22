@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "chaos-rng"
 version = "0.1.0"
-description = "Professional chaos-based random number generator using three-body dynamics"
+description = "Chaos-based random number generator built around a three-body simulation"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
     {name = "Mustafa Tarim", email = "mail@mustafatarim.com"},
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -61,7 +61,6 @@ all = [
 
 [project.urls]
 Homepage = "https://github.com/mustafatarim/chaos-rng"
-Documentation = "https://chaos-rng.readthedocs.io"
 Repository = "https://github.com/mustafatarim/chaos-rng.git"
 "Bug Tracker" = "https://github.com/mustafatarim/chaos-rng/issues"
 

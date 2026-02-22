@@ -7,12 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial public release preparation
-- Comprehensive documentation
-- GitHub Actions CI/CD pipeline
-- Pre-commit hooks configuration
-- Security scanning and dependency monitoring
+### Changed
+- Simplified README to focus on the core API and realistic security expectations.
+- Rewrote deployment and release docs into a minimal publish workflow.
+- Tightened package metadata wording for initial public release.
 
 ## [0.1.0] - 2024-01-XX
 
