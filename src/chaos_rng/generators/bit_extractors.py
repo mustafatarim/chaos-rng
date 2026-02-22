@@ -6,8 +6,9 @@ system trajectories, each with different statistical properties and performance
 characteristics.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import numba
 import numpy as np
@@ -71,7 +72,7 @@ class ThresholdExtractor(BitExtractionMethod):
     Formula: bit = 1 if x(n+1) > x(n) else 0
     """
 
-    def __init__(self, coordinate_indices: Optional[np.ndarray] = None):
+    def __init__(self, coordinate_indices: np.ndarray | None = None):
         """
         Initialize threshold extractor.
 
@@ -114,7 +115,7 @@ class PoincareExtractor(BitExtractionMethod):
 
     def __init__(
         self,
-        section_normal: Optional[np.ndarray] = None,
+        section_normal: np.ndarray | None = None,
         section_offset: float = 0.0,
         coordinate_idx: int = 0,
     ):
