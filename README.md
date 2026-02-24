@@ -97,7 +97,7 @@ print(result)
 ```
 
 `NISTTestSuite` and `ContinuousValidator` are also available, but they are not
-part of the default CI gate in `0.1.3`.
+part of the default CI gate in `0.1.4`.
 
 ## Examples
 
@@ -182,7 +182,7 @@ make release-check
 
 The intended release path is:
 
-1. Tag release (`v0.1.3`)
+1. Tag release (`v0.1.4`)
 2. Publish to TestPyPI
 3. Smoke-test install from TestPyPI
 4. Publish to PyPI

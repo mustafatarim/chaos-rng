@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-02-24
+
+### Changed
+
+- Made release publishing workflow rerun-safe by skipping existing files during
+  TestPyPI and PyPI uploads (`skip-existing`), preventing duplicate-upload
+  failures when re-running release jobs.
+
 ## [0.1.3] - 2026-02-24
 
 ### Added
@@ -52,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional cryptographic utilities for seeding and post-processing
 - Performance benchmarking and test coverage
 
-[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.0...v0.1.1
