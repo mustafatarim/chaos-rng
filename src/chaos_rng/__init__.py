@@ -8,7 +8,7 @@ The library also includes optional NumPy integration and helper utilities
 for validation and cryptographic post-processing experiments.
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "Mustafa Tarim"
 __email__ = "mail@mustafatarim.com"
 
