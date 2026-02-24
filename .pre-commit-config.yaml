@@ -32,4 +32,4 @@ repos:
           - scipy
           - types-setuptools
         args: ["--ignore-missing-imports", "--disable-error-code=type-arg"]
-        exclude: ^tests/
+        exclude: ^(tests/|examples/|benchmarks/|demo\.py$)

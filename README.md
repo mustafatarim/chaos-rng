@@ -4,9 +4,15 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Chaos RNG is a Python library for generating random numbers from chaotic
-three-body dynamics, with NumPy-compatible generators and optional
-cryptographic post-processing utilities.
+Chaos RNG is a Python library for experimenting with random number generation
+driven by chaotic three-body dynamics. It provides a `ThreeBodyRNG` API for
+direct use, NumPy-compatible generator utilities, and optional validation /
+post-processing helpers for offline analysis and integration experiments.
+
+The project is aimed at research, exploration, and reproducible benchmarking of
+chaos-based RNG behavior. It is not positioned as a drop-in replacement for
+audited cryptographic random number generators, but it includes optional tools
+that help evaluate output quality and integration patterns.
 
 This project is currently documented README-first for the `0.1.x` releases.
 
@@ -91,7 +97,59 @@ print(result)
 ```
 
 `NISTTestSuite` and `ContinuousValidator` are also available, but they are not
-part of the default CI gate in `0.1.2`.
+part of the default CI gate in `0.1.3`.
+
+## Examples
+
+Focused example scripts are available in [`examples/`](examples/README.md):
+
+- `examples/quick_start.py`
+- `examples/reproducibility.py`
+- `examples/numpy_integration.py`
+- `examples/validation_offline.py`
+- `examples/crypto_optional.py`
+
+Run one example from the repository root:
+
+```bash
+python3 -m pip install -e .[crypto,test]
+python3 examples/quick_start.py
+```
+
+## Benchmarking
+
+Use the benchmark runner in [`benchmarks/run_benchmarks.py`](benchmarks/run_benchmarks.py)
+to collect reproducible JSON results.
+
+Quick benchmark profile:
+
+```bash
+python3 -m pip install -e .[crypto,test]
+python3 benchmarks/run_benchmarks.py --profile quick --output benchmarks/results/latest.json
+```
+
+Fuller benchmark profile:
+
+```bash
+python3 benchmarks/run_benchmarks.py --profile full --output benchmarks/results/full.json
+```
+
+Benchmark reporting guidance:
+
+- Report cold start (time-to-first-output) separately from warm throughput.
+- Include environment details (CPU, OS, Python, NumPy, Numba).
+- Compare against baselines (`numpy.random.default_rng`, `random.Random`,
+  `os.urandom`, `secrets.token_bytes`) with the same batch sizes.
+
+Suggested README/issue table format:
+
+| Scenario | Mode | Batch | Mean Time (s) | Throughput | Notes |
+| --- | --- | ---: | ---: | ---: | --- |
+| `ThreeBodyRNG.random` | cold start | 1 | `...` | n/a | includes init + JIT |
+| `ThreeBodyRNG.random (lsb)` | warm | 100000 | `...` | `... values/s` | after warm-up |
+| `numpy.default_rng().random` | warm | 100000 | `...` | `... values/s` | baseline |
+| `ThreeBodyRNG.bytes` | warm | 4096 bytes | `...` | `... bytes/s` | after warm-up |
+| `os.urandom` | warm | 4096 bytes | `...` | `... bytes/s` | baseline |
 
 ## Performance and Caveats
 
@@ -124,7 +182,7 @@ make release-check
 
 The intended release path is:
 
-1. Tag release (`v0.1.2`)
+1. Tag release (`v0.1.3`)
 2. Publish to TestPyPI
 3. Smoke-test install from TestPyPI
 4. Publish to PyPI

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-02-24
+
+### Added
+
+- Focused example scripts under `examples/` for quick-start, reproducibility,
+  NumPy integration, offline validation, and optional crypto helpers.
+- Reproducible benchmark runner under `benchmarks/` with JSON output, baseline
+  comparisons, and separate cold-start vs warm-throughput reporting.
+
+### Changed
+
+- Expanded README with example/benchmark usage guidance and a clearer project
+  positioning intro.
+- Included `examples/` and `benchmarks/` in source distribution packaging.
+
 ## [0.1.2] - 2026-02-22
 
 ### Fixed
@@ -37,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional cryptographic utilities for seeding and post-processing
 - Performance benchmarking and test coverage
 
-[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/mustafatarim/chaos-rng/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mustafatarim/chaos-rng/releases/tag/v0.1.0
