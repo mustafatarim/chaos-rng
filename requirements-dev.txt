@@ -39,7 +39,7 @@ bump2version>=1.0  # Version management
 # Development utilities
 ipython>=8.0  # Better REPL
 ipdb>=0.13  # Debugger
-rich>=13.0  # Rich output formatting
+rich>=15.0.0  # Rich output formatting
 tqdm>=4.0  # Progress bars
 
 # Performance analysis
