@@ -44,7 +44,7 @@ tqdm>=4.0  # Progress bars
 
 # Performance analysis
 memory-profiler>=0.60
-line-profiler>=4.0
+line-profiler>=5.0.2
 py-spy>=0.3  # Sampling profiler
 
 # Additional testing tools
