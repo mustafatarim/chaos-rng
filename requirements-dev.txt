@@ -22,7 +22,7 @@ pre-commit>=3.0
 # Security
 bandit>=1.7.0
 safety>=2.0
-pip-audit>=2.0
+pip-audit>=2.9.0
 
 # Documentation
 sphinx>=5.0
