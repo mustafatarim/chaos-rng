@@ -28,7 +28,7 @@ pip-audit>=2.0
 sphinx>=5.0
 sphinx-rtd-theme>=1.0
 numpydoc>=1.4
-doc8>=1.0  # Documentation linting
+doc8>=1.1.2  # Documentation linting
 sphinx-lint>=0.6
 
 # Build and packaging
