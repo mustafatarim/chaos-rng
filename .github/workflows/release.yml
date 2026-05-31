@@ -61,7 +61,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
           skip-existing: true
 
   smoke-test-testpypi:
@@ -103,6 +103,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     environment: release
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Download dist artifacts
@@ -114,5 +117,4 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
