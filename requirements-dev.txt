@@ -9,7 +9,7 @@ pytest-cov>=4.0
 pytest-benchmark>=4.0
 pytest-xdist>=3.0  # Parallel test execution
 pytest-mock>=3.0
-hypothesis>=6.0  # Property-based testing
+hypothesis>=6.141.1  # Property-based testing
 nistrng>=0.1.0  # NIST statistical tests
 
 # Code quality
